@@ -15,9 +15,5 @@ export default function (opts: {
   };
   [key: string]: any;
 }, flow: Flow) {
-  const object = Object.create(null);
-
-  object.cookie = new Cookie(opts.resource.config, flow.helpers);
-
-  return object;
+  return new Cookie(opts.resource.config, flow.helpers);
 }
