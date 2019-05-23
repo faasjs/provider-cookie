@@ -6,7 +6,12 @@ export default class Cookie {
   public expires: number;
   public secure: boolean;
   public httpOnly: boolean;
-  public session?: Session;
+  public session?: {
+    _: Session;
+    read: (key: string) => any;
+    write: (key: string, value: any) => any;
+    [key: string]: any;
+  };
   private helpers: {
     _event: any;
     [key: string]: any;
@@ -32,7 +37,25 @@ export default class Cookie {
     this.httpOnly = typeof opts.httpOnly !== 'undefined' ? opts.httpOnly : true;
 
     if (opts.session) {
-      this.session = new Session(opts.session);
+      const session = new Session(opts.session);
+      this.session = {
+        _: session,
+        read: (key: string) => {
+          if (session.cacheId !== this.helpers._context.current.id) {
+            session.updateCache(this.helpers._context.current.id, this.read(opts.session!.key));
+          }
+          return session.read(key);
+        },
+        write: (key: string, value: any) => {
+          if (session.cacheId !== this.helpers._context.current.id) {
+            session.updateCache(this.helpers._context.current.id, this.read(opts.session!.key));
+          }
+
+          this.write(opts.session!.key, session.encode(session.write(key, value)));
+
+          return value;
+        }
+      };
     }
 
     this.helpers = helpers;
@@ -40,12 +63,12 @@ export default class Cookie {
 
   public read (key: string) {
     if (!this.helpers._event.header.cookie) {
-      return null;
+      return undefined;
     }
 
     const v = this.helpers._event.header.cookie.match('(^|;)\\s*' + key + '\\s*=\\s*([^;]+)');
 
-    return v ? decodeURIComponent(v.pop()) : null;
+    return v ? decodeURIComponent(v.pop()) : undefined;
   }
 
   public write (key: string, value: any, opts?: {
@@ -97,6 +120,6 @@ export default class Cookie {
       throw Error('Not found trigger-http\'s helper');
     }
 
-    return this;
+    return value;
   }
 }

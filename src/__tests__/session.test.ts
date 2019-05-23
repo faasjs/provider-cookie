@@ -25,5 +25,5 @@ describe('session', function () {
     expect(() => {
       new Session({})
     }).toThrowError('Session key & secret required.');
-  })
+  });
 });

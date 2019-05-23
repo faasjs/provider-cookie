@@ -15,6 +15,10 @@ export default class Session {
   public opts: SessionOption;
   public secret: Buffer;
   public signedSecret: Buffer;
+  public cacheId?: string;
+  public cacheContent?: {
+    [key: string]: any;
+  };
 
   constructor (opts: {
     key?: string;
@@ -46,7 +50,7 @@ export default class Session {
     this.signedSecret = crypto.pbkdf2Sync(this.opts.secret, this.opts.signedSalt, this.opts.iterations!, this.opts.keylen, this.opts.digest);
   }
 
-  encode (text: any) {
+  public encode (text: any) {
     if (typeof text !== 'string') {
       text = JSON.stringify(text);
     }
@@ -66,7 +70,7 @@ export default class Session {
     return main + '--' + digest;
   }
 
-  decode (text: string) {
+  public decode (text: string) {
     text = decodeURIComponent(text);
 
     const signedParts = text.split('--');
@@ -91,10 +95,24 @@ export default class Session {
 
     let decryptor = [part, final].join('');
 
-    if (decryptor.startsWith('{')) {
-      decryptor = JSON.parse(decryptor);
-    }
+    return JSON.parse(decryptor);
+  }
 
-    return decryptor;
+  public updateCache (id: string, cookie?: string) {
+    this.cacheId = id;
+    this.cacheContent = cookie ? this.decode(cookie) : Object.create(null);
+  }
+
+  public read (key: string) {
+    return this.cacheContent![key as string];
+  }
+
+  public write (key: string, value?: any) {
+    if (value === null || typeof value === 'undefined') {
+      delete this.cacheContent![key as string];
+    } else {
+      this.cacheContent![key as string] = value;
+    }
+    return this.cacheContent;
   }
 }
