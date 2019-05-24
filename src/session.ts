@@ -79,7 +79,7 @@ export default class Session {
 
     hmac.update(signedParts[0]);
     digest = hmac.digest('hex');
-    console.log(this.opts, signedParts);
+
     if (signedParts[1] !== digest) {
       throw Error('Not valid');
     }
