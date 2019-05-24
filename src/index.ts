@@ -1,7 +1,7 @@
 import Cookie from './cookie';
 import Flow from '@faasjs/flow';
 
-export default function (opts: {
+export function handler (opts: {
   resource: {
     config: {
       session?: {
