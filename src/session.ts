@@ -79,7 +79,7 @@ export default class Session {
 
     hmac.update(signedParts[0]);
     digest = hmac.digest('hex');
-
+    console.log(this.opts, signedParts);
     if (signedParts[1] !== digest) {
       throw Error('Not valid');
     }
@@ -100,7 +100,12 @@ export default class Session {
 
   public updateCache (id: string, cookie?: string) {
     this.cacheId = id;
-    this.cacheContent = cookie ? this.decode(cookie) : Object.create(null);
+    try {
+      this.cacheContent = cookie ? this.decode(cookie) : Object.create(null);
+    } catch (error) {
+      console.error(error);
+      this.cacheContent = Object.create(null);
+    }
   }
 
   public read (key: string) {

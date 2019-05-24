@@ -130,7 +130,9 @@ describe('cookie', function () {
           }
         }, {
             _event: {
-              header: {}
+              header: {
+                cookie: 'key=1'
+              }
             },
             _context: {
               current: {

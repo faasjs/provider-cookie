@@ -41,6 +41,7 @@ export default class Cookie {
       this.session = {
         _: session,
         read: (key: string) => {
+          console.log(session.cacheId);
           if (session.cacheId !== this.helpers._context.current.id) {
             session.updateCache(this.helpers._context.current.id, this.read(opts.session!.key));
           }
